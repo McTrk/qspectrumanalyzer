@@ -1,10 +1,18 @@
-import time, sys, os
+import time
+import sys
+import os
 
 from Qt import QtCore
 import numpy as np
 
 from qspectrumanalyzer.utils import smooth
 from qspectrumanalyzer.backends import soapy_power
+
+
+def pad_data(data, padto):
+    ld = len(padto) - len(data)
+    return np.pad(data, (0, ld), 'edge') if ld > 0\
+        else data[0:ld] if ld < 0 else data
 
 
 class HistoryBuffer:
@@ -14,7 +22,8 @@ class HistoryBuffer:
         self.max_history_size = max_history_size
         self.history_size = 0
         self.counter = 0
-        self.buffer = np.empty(shape=(max_history_size, data_size), dtype=dtype)
+        self.buffer = np.empty(
+            shape=(max_history_size, data_size), dtype=dtype)
 
     def append(self, data):
         """Append new data to ring buffer"""
@@ -22,7 +31,7 @@ class HistoryBuffer:
         if self.history_size < self.max_history_size:
             self.history_size += 1
         self.buffer = np.roll(self.buffer, -1, axis=0)
-        self.buffer[-1] = data
+        self.buffer[-1] = pad_data(data, self.buffer[0])
 
     def get_buffer(self):
         """Return buffer stripped to size of actual data"""
@@ -51,7 +60,8 @@ class Task(QtCore.QRunnable):
 
     def run(self):
         """Run task in worker thread and emit signal with result"""
-        #print('Running', self.task, 'in thread', QtCore.QThread.currentThreadId())
+        # print('Running', self.task, 'in thread',
+        #  QtCore.QThread.currentThreadId())
         result = self.task(*self.args, **self.kwargs)
         self.signals.result.emit(result)
 
@@ -134,6 +144,9 @@ class DataStorage(QtCore.QObject):
         if self.smooth:
             data["y"] = self.smooth_data(data["y"])
 
+        if self.average is not None:
+            data["y"] = pad_data(data["y"], self.average)
+
         self.y = data["y"]
         self.data_updated.emit(self)
 
@@ -154,32 +167,45 @@ class DataStorage(QtCore.QObject):
         if self.average is None:
             self.average = data["y"].copy()
         else:
-            self.average = np.average((self.average, data["y"]), axis=0, weights=(self.average_counter - 1, 1))
-            self.average_updated.emit(self)
+            try:
+                self.average = np.average(
+                    (self.average, data["y"]),
+                    axis=0, weights=(self.average_counter - 1, 1))
+                self.average_updated.emit(self)
+            except Exception as e:
+                print("np.average: ", e)
 
     def update_peak_hold_max(self, data):
         """Update max. peak hold data"""
         if self.peak_hold_max is None:
             self.peak_hold_max = data["y"].copy()
         else:
-            self.peak_hold_max = np.maximum(self.peak_hold_max, data["y"])
-            self.peak_hold_max_updated.emit(self)
+            try:
+                self.peak_hold_max = np.maximum(self.peak_hold_max, data["y"])
+                self.peak_hold_max_updated.emit(self)
+            except Exception as e:
+                print("np.maximum: ", e)
 
     def update_peak_hold_min(self, data):
         """Update min. peak hold data"""
         if self.peak_hold_min is None:
             self.peak_hold_min = data["y"].copy()
         else:
-            self.peak_hold_min = np.minimum(self.peak_hold_min, data["y"])
-            self.peak_hold_min_updated.emit(self)
+            try:
+                self.peak_hold_min = np.minimum(self.peak_hold_min, data["y"])
+                self.peak_hold_min_updated.emit(self)
+            except Exception as e:
+                print("np.minimum: ", e)
 
     def smooth_data(self, y):
         """Apply smoothing function to data"""
-        return smooth(y, window_len=self.smooth_length, window=self.smooth_window)
+        return smooth(y, window_len=self.smooth_length,
+                      window=self.smooth_window)
 
     def set_smooth(self, toggle, length=11, window="hanning"):
         """Toggle smoothing and set smoothing params"""
-        if toggle != self.smooth or length != self.smooth_length or window != self.smooth_window:
+        if toggle != self.smooth or length != self.smooth_length\
+           or window != self.smooth_window:
             self.smooth = toggle
             self.smooth_length = length
             self.smooth_window = window
@@ -250,7 +276,9 @@ class DataStorage(QtCore.QObject):
             for y in history[:-1]:
                 self.average_counter += 1
                 y = self.smooth_data(y)
-                self.average = np.average((self.average, y), axis=0, weights=(self.average_counter - 1, 1))
+                self.average = np.average(
+                    (self.average, y), axis=0,
+                    weights=(self.average_counter - 1, 1))
                 self.peak_hold_max = np.maximum(self.peak_hold_max, y)
                 self.peak_hold_min = np.minimum(self.peak_hold_min, y)
         else:
@@ -261,10 +289,12 @@ class DataStorage(QtCore.QObject):
             self.peak_hold_min = history.min(axis=0)
 
         self.data_recalculated.emit(self)
-        #self.data_updated.emit({"x": self.x, "y": self.y})
-        #self.average_updated.emit({"x": self.x, "y": self.average})
-        #self.peak_hold_max_updated.emit({"x": self.x, "y": self.peak_hold_max})
-        #self.peak_hold_min_updated.emit({"x": self.x, "y": self.peak_hold_min})
+        # self.data_updated.emit({"x": self.x, "y": self.y})
+        # self.average_updated.emit({"x": self.x, "y": self.average})
+        # self.peak_hold_max_updated.emit({"x": self.x,
+        #  "y": self.peak_hold_max})
+        # self.peak_hold_min_updated.emit({"x": self.x,
+        #  "y": self.peak_hold_min})
 
 
 class Test:
