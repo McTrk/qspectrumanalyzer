@@ -7,9 +7,9 @@ hackrf_sweep, rtl_power, rx_power and other backends)
 Screenshots
 -----------
 
-.. image:: https://mctrk.github.io/qspectrumanalyzer/qspectrumanalyzer_screenshot.png
+.. image:: https://xmikos.github.io/qspectrumanalyzer/qspectrumanalyzer_screenshot.png
 
-.. image:: https://mctrk.github.io/qspectrumanalyzer/qspectrumanalyzer_screenshot2.png
+.. image:: https://xmikos.github.io/qspectrumanalyzer/qspectrumanalyzer_screenshot2.png
 
 Requirements
 ------------
@@ -19,7 +19,7 @@ Requirements
 - Qt.py (https://github.com/mottosso/Qt.py)
 - PyQtGraph (http://www.pyqtgraph.org)
 - soapy_power (https://github.com/xmikos/soapy_power)
-- Optional: hackrf / rtl-sdr / rtl_power_fftw / rx_tools
+- Optional: hackrf / rtl-sdr / rtl_power_fftw / rx_tools / SoapyPlutoSDR
 
 Backends
 --------
@@ -35,6 +35,9 @@ nearly all SDR platforms (RTL-SDR, HackRF, Airspy, SDRplay, LimeSDR, bladeRF,
 USRP and some other SDR devices). It is highly configurable (see additional parameters
 help in *Settings* menu) and supports short acquisition time for
 near real-time continuous measurement.
+
+- **Pluto SDR** (https://github.com/pothosware/SoapyPlutoSDR)
+Pluto SDR is supported through the ``soapy_power`` module at given URL, where installation instructions are found.
 
 Other backends
 **************
@@ -144,6 +147,7 @@ If you want to install QSpectrumAnalyzer directly from Git master branch, you ca
     git clone https://github.com/mctrk/qspectrumanalyzer.git
     cd qspectrumanalyzer
     pip3 install setup_qt
+    python3 setup.py build_qt
     pip3 install --user .
 
 Windows:
@@ -171,6 +175,7 @@ You can also install QSpectrumAnalyzer manually from `PyPI <https://pypi.python.
 
         pip install PyQt5
         pip install setup_qt
+        python3 setup.py build_qt
         pip install QSpectrumAnalyzer
 
 You should then be able to run it with ``qspectrumanalyzer`` (or ``python -m qspectrumanalyzer``
