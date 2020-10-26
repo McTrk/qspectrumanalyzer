@@ -157,7 +157,7 @@ class PowerThread(BasePowerThread):
                 self.pipe_read_fd = None
                 self.pipe_write_fd = None
                 self.pipe_write_handle = None
-
+                
     def parse_output(self, data):
         """Parse data from soapy_power"""
         header, y_axis = data
@@ -169,6 +169,14 @@ class PowerThread(BasePowerThread):
         step = header.step
         samples = header.samples
 
+        def dtl(o):
+            return f"{type(o)}[{len(o)}]"
+
+        def dtll():
+            print(f"{start_freq=}"
+                  +f" {dtl(self.databuffer['x'])=}, {dtl(self.databuffer['y'])=}"
+                  + f", {dtl(x_axis)}, {dtl(y_axis)}")
+
         x_axis = np.linspace(start_freq, stop_freq, round((stop_freq - start_freq) / step))
         if len(x_axis) != len(y_axis):
             print("ERROR: len(x_axis) != len(y_axis)")
@@ -179,11 +187,16 @@ class PowerThread(BasePowerThread):
 
         if start_freq == self.min_freq:
             self.databuffer = {"timestamp": time_stop,
-                               "x": list(x_axis),
-                               "y": list(y_axis)}
+                               "x": x_axis,
+                               "y": y_axis}
+
         else:
-            self.databuffer["x"].extend(x_axis)
-            self.databuffer["y"].extend(y_axis)
+            try:
+                self.databuffer["x"] = np.append(self.databuffer["x"], x_axis)
+                self.databuffer["y"] = np.append(self.databuffer["y"], y_axis)
+            except Exception as e:
+                print(e)
+        # dtll()
 
         if stop_freq > (self.params["stop_freq"] * 1e6) - step:
             self.data_storage.update(self.databuffer)
@@ -247,8 +260,8 @@ def read_from_file(f):
 
         if header.start == min_freq:
             databuffer = {"timestamp": header.time_stop,
-                          "x": list(x_axis),
-                          "y": list(y_axis)}
+                          "x": x_axis,
+                          "y": y_axis}
         else:
-            databuffer["x"].extend(x_axis)
-            databuffer["y"].extend(y_axis)
+            databuffer["x"] = np.append(databuffer["x"], x_axis)
+            databuffer["y"] = np.append(databuffer["y"], y_axis)

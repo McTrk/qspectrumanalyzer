@@ -7,9 +7,9 @@ hackrf_sweep, rtl_power, rx_power and other backends)
 Screenshots
 -----------
 
-.. image:: https://xmikos.github.io/qspectrumanalyzer/qspectrumanalyzer_screenshot.png
+.. image:: https://mctrk.github.io/qspectrumanalyzer/qspectrumanalyzer_screenshot.png
 
-.. image:: https://xmikos.github.io/qspectrumanalyzer/qspectrumanalyzer_screenshot2.png
+.. image:: https://mctrk.github.io/qspectrumanalyzer/qspectrumanalyzer_screenshot2.png
 
 Requirements
 ------------
@@ -141,8 +141,9 @@ Ubuntu:
 If you want to install QSpectrumAnalyzer directly from Git master branch, you can use this procedure:
 ::
 
-    git clone https://github.com/xmikos/qspectrumanalyzer.git
+    git clone https://github.com/mctrk/qspectrumanalyzer.git
     cd qspectrumanalyzer
+    pip3 install setup_qt
     pip3 install --user .
 
 Windows:
@@ -158,7 +159,7 @@ libraries and drivers).*
    `Lime Suite <https://github.com/myriadrf/LimeSuite>`_ and `Zadig <http://zadig.akeo.ie>`_.
    Utilities like ``hackrf_sweep`` and ``rtl_power`` are also included.
 2. download QSpectrumAnalyzer installer or portable zip archive from GitHub
-   `releases <https://github.com/xmikos/qspectrumanalyzer/releases>`_ page
+   `releases <https://github.com/mctrk/qspectrumanalyzer/releases>`_ page
 3. after you connect your SDR device, you have to run `Zadig <http://zadig.akeo.ie>`_ to install USB drivers
 
 You can also install QSpectrumAnalyzer manually from `PyPI <https://pypi.python.org>`_:
@@ -169,6 +170,7 @@ You can also install QSpectrumAnalyzer manually from `PyPI <https://pypi.python.
 3. Open ``cmd.exe`` and run::
 
         pip install PyQt5
+        pip install setup_qt
         pip install QSpectrumAnalyzer
 
 You should then be able to run it with ``qspectrumanalyzer`` (or ``python -m qspectrumanalyzer``

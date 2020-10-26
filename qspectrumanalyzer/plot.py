@@ -139,9 +139,9 @@ class SpectrumPlotWidget:
         if self.main_curve or force:
             ld = len(data_storage.y) - len(data_storage.x)
             if ld > 0:
-                data_storage.x += (data_storage.x[-1],) * ld
+                data_storage.x = np.append(data_storage.x, (data_storage.x[-1],) * ld)
             elif ld < 0:
-                data_storage.y +=  (data_storage.y[-1],) * (-ld)
+                data_storage.y = np.append(data_storage.y, (data_storage.y[-1],) * (-ld))
                 
             self.curve.setData(data_storage.x, data_storage.y)
             if force:
